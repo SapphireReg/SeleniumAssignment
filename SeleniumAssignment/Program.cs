@@ -14,6 +14,7 @@ namespace SeleniumAssignment
 {
     internal class Program
     {
+
         static void Main(string[] args)
         {
 
@@ -22,6 +23,7 @@ namespace SeleniumAssignment
             //ValidateInternalLinks(); //task 3
             //CheckCartTotalDeleteOne(); //task 4
             //CheckCartTotalDeleteExpensive(); //task 5
+            //OutputTradeMeLinks();   //trask 6
         }
 
         public static void TaupoWeatherSearch()
@@ -79,7 +81,6 @@ namespace SeleniumAssignment
                 }
             } //end of loop
             Console.WriteLine("Link Validation Done");
-            driver.Quit();
         }
 
         public static void CheckCartTotalDeleteOne()
@@ -102,7 +103,21 @@ namespace SeleniumAssignment
 
         public static void OutputTradeMeLinks()
         {
+            IWebDriver driver = new ChromeDriver(); //creating chrome driver
+            driver.Navigate().GoToUrl("https://www.trademe.co.nz/a/"); //navigates to the website
+            IReadOnlyCollection<IWebElement> links = driver.FindElements(By.TagName("a"));
 
+            foreach (IWebElement link in links)
+            {
+                string url = link.GetAttribute("href"); //gets link text
+                if (url != null)
+                {
+                    if (url.StartsWith("https://www.trademe.co.nz/") && //internal link
+                        (url.Contains("property") || url.Contains("services"))) //contains property or services
+                    { Console.WriteLine(url); }
+                }
+            }
+            Console.WriteLine("Link Output Done");
         }
 
         public static void DeleteMostExpensiveItemFromCart(IWebDriver driver)
