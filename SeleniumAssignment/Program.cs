@@ -20,7 +20,8 @@ namespace SeleniumAssignment
             //TaupoWeatherSearch(); //task 1
             //TradeMeITJobSearch(); //task 2
             //ValidateInternalLinks(); //task 3
-            //CheckCartTotal(); //task 4
+            //CheckCartTotalDeleteOne(); //task 4
+            //CheckCartTotalDeleteExpensive(); //task 5
         }
 
         public static void TaupoWeatherSearch()
@@ -81,13 +82,46 @@ namespace SeleniumAssignment
             driver.Quit();
         }
 
-        public static void CheckCartTotal()
+        public static void CheckCartTotalDeleteOne()
         {
             IWebDriver driver = new ChromeDriver(); //creating chrome driver
 
             generateItemsToCart(driver, "homefeatured", 3);
             verifyCheckoutTotal(driver);
-            
+            driver.FindElement(By.ClassName("icon-trash")).Click(); //deletes first item
+        }
+
+        public static void CheckCartTotalDeleteExpensive()
+        {
+            IWebDriver driver = new ChromeDriver(); //creating chrome driver
+
+            generateItemsToCart(driver, "homefeatured", 4);
+            verifyCheckoutTotal(driver);
+            DeleteMostExpensiveItemFromCart(driver);    
+        }
+
+        public static void OutputTradeMeLinks()
+        {
+
+        }
+
+        public static void DeleteMostExpensiveItemFromCart(IWebDriver driver)
+        {
+            IReadOnlyCollection<IWebElement> checkOutItems = driver.FindElements(By.ClassName("cart_item"));
+            decimal mostExpensive = 0;
+
+            foreach (IWebElement item in checkOutItems) //determines highest price
+            { 
+                decimal price = Decimal.Parse(item.FindElement(By.ClassName("cart_total")).Text.Remove(0, 1));
+                if (price > mostExpensive) { mostExpensive = price; }
+            }
+
+            foreach (IWebElement item in checkOutItems) // searches and deletes highest price
+            { 
+                decimal price = Decimal.Parse(item.FindElement(By.ClassName("cart_total")).Text.Remove(0, 1));
+                if (price == mostExpensive) { item.FindElement(By.ClassName("icon-trash")).Click(); }
+            }
+            Console.WriteLine("Deleted: " + mostExpensive.ToString());
 
         }
 
@@ -108,13 +142,12 @@ namespace SeleniumAssignment
             IWebElement popularList = driver.FindElement(By.Id("homefeatured"));
             IReadOnlyCollection<IWebElement> products = popularList.FindElements(By.ClassName("available-now")); //fetches products from homefeatured list
             int productCount = products.Count();
-            Console.WriteLine(productCount.ToString());
             driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15);
 
 
             for (int i = 0; i < count; i++)
             {
-                int product = rand.Next(productCount + 1);
+                int product = rand.Next(productCount)+1;
                 Console.WriteLine(product.ToString());
                 var addToCart = driver.FindElement(By.XPath($"//*[@id=\"homefeatured\"]/li[{product}]/div/div[2]/div[2]/a[1]"));
                 addToCart.Click();
@@ -123,7 +156,6 @@ namespace SeleniumAssignment
                 IWebElement continueBtn = wait.Until(e => e.FindElement(By.ClassName("continue")));
                 driver.FindElement(By.ClassName("continue")).Click(); //continues shopping
             }
-
         }
 
         /// <summary>
@@ -137,9 +169,9 @@ namespace SeleniumAssignment
             IReadOnlyCollection<IWebElement> checkOutItems = driver.FindElements(By.ClassName("cart_item"));
             decimal totalPrice = 0;
 
-            foreach (IWebElement items in checkOutItems) //adds all product in cart's total price
+            foreach (IWebElement item in checkOutItems) //adds all product in cart's total price
             {
-                decimal price = Decimal.Parse(items.FindElement(By.ClassName("cart_total")).Text.Remove(0, 1));
+                decimal price = Decimal.Parse(item.FindElement(By.ClassName("cart_total")).Text.Remove(0, 1));
                 totalPrice += price;
             }
 
